@@ -238,15 +238,6 @@ MODEL_CONFIG_JSON='[
 
 ---
 
-## 🔐 安全须知
-
-开源仓库中**严禁提交真实密钥**。请确保：
-
-- `FLASK_SECRET_KEY` / `ACCESS_PASSWORD` / `API_TOKEN` 在部署时使用强随机值
-- 生产环境关闭 `FLASK_DEBUG=true`
-- ES / Milvus 对外暴露时务必开启鉴权
-
----
 
 ## 📄 License
 
