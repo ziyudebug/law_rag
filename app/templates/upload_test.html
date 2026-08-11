@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>上传测试</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --text: #141817;
+      --muted: #62706c;
+      --line: #dfe5e1;
+      --accent: #23675d;
+      --accent-dark: #174a42;
+      --danger: #b85628;
+      --soft: #eef4f2;
+      --shadow: 0 18px 48px rgba(16, 29, 25, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 28px auto 44px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .bar,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 20px;
+    }
+
+    .links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 430px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      background: #fbfcfb;
+      font: inherit;
+      outline: none;
+    }
+
+    input {
+      height: 42px;
+      padding: 0 12px;
+    }
+
+    input[type="file"] {
+      height: auto;
+      padding: 11px 12px;
+    }
+
+    textarea {
+      min-height: 210px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.6;
+      font-family: "SFMono-Regular", "Menlo", "Monaco", monospace;
+      font-size: 13px;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(35, 103, 93, 0.12);
+    }
+
+    button {
+      height: 42px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 16px;
+      color: #fff;
+      background: var(--accent);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--accent);
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button.secondary:hover {
+      color: var(--accent-dark);
+      background: #f8fbfa;
+    }
+
+    button:disabled {
+      opacity: 0.62;
+      cursor: wait;
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .file-list {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      font-size: 13px;
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #26312e;
+    }
+
+    .file-row span:last-child {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    pre {
+      margin: 0;
+      min-height: 380px;
+      max-height: 620px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 8px;
+      color: #eef7f4;
+      background: #14201d;
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 940px) {
+      .layout,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="bar">
+      <h1>上传测试</h1>
+      <div class="links">
+        <a href="/retrieval-config">检索配置</a>
+        <a href="/retrieval-test">召回测试</a>
+        <a href="/folder-test">文件树测试</a>
+        <a href="/">返回文档解析</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <h2>请求参数</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="tenant_id">租户 ID</label>
+            <input id="tenant_id" name="tenant_id" type="number" min="1" value="1">
+          </div>
+          <div class="field">
+            <label for="kb_id">知识库 ID</label>
+            <input id="kb_id" name="kb_id" type="number" min="1" value="1">
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label for="token">token</label>
+            <input id="token" value="{{ api_token }}">
+          </div>
+          <div class="field">
+            <label for="start_document_id">起始文档 ID</label>
+            <input id="start_document_id" type="number" min="1" value="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="files">上传文件</label>
+          <input id="files" name="files" type="file" multiple>
+        </div>
+        <div class="file-list" id="file-list">未选择文件。</div>
+        <button class="secondary" id="generate-btn" type="button">根据文件生成 document_detail</button>
+        <div class="field">
+          <label for="document_detail">document_detail</label>
+          <textarea id="document_detail">[
+  {
+    "document_id": "1",
+    "document_file": "test.xlsx"
+  },
+  {
+    "document_id": "2",
+    "document_file": "test.pdf"
+  }
+]</textarea>
+        </div>
+        <button id="upload-btn" type="button">提交上传</button>
+        <div class="status" id="status">选择多个文件后提交到 /api/upload。</div>
+      </section>
+
+      <section class="panel">
+        <h2>响应结果</h2>
+        <pre id="result">{
+  "message": "上传响应会显示在这里"
+}</pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const filesInput = document.getElementById("files");
+    const fileListEl = document.getElementById("file-list");
+    const detailEl = document.getElementById("document_detail");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+    const uploadBtn = document.getElementById("upload-btn");
+
+    function field(id) {
+      return document.getElementById(id);
+    }
+
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function selectedFiles() {
+      return Array.from(filesInput.files || []);
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    function renderFileList() {
+      const files = selectedFiles();
+      fileListEl.textContent = "";
+      if (!files.length) {
+        fileListEl.textContent = "未选择文件。";
+        return;
+      }
+      files.forEach((file, index) => {
+        const row = document.createElement("div");
+        row.className = "file-row";
+        const name = document.createElement("span");
+        name.textContent = `${index + 1}. ${file.name}`;
+        const size = document.createElement("span");
+        size.textContent = formatBytes(file.size);
+        row.appendChild(name);
+        row.appendChild(size);
+        fileListEl.appendChild(row);
+      });
+    }
+
+    function generateDocumentDetail() {
+      const start = Number(field("start_document_id").value || 1);
+      const detail = selectedFiles().map((file, index) => ({
+        document_id: String(start + index),
+        document_file: file.name
+      }));
+      detailEl.value = JSON.stringify(detail, null, 2);
+      setStatus(`已生成 ${detail.length} 条 document_detail。`);
+    }
+
+    function parseDocumentDetail() {
+      let detail;
+      try {
+        detail = JSON.parse(detailEl.value);
+      } catch (error) {
+        throw new Error(`document_detail 不是合法 JSON: ${error.message}`);
+      }
+      if (!Array.isArray(detail)) {
+        throw new Error("document_detail 必须是数组。");
+      }
+      const files = selectedFiles();
+      if (detail.length < files.length) {
+        throw new Error("document_detail 数量不能少于上传文件数量。");
+      }
+      detail.slice(0, files.length).forEach((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`document_detail 第 ${index + 1} 项必须是对象。`);
+        }
+        if (!String(item.document_id || "").trim()) {
+          throw new Error(`document_detail 第 ${index + 1} 项缺少 document_id。`);
+        }
+        if (!String(item.document_file || "").trim()) {
+          throw new Error(`document_detail 第 ${index + 1} 项缺少 document_file。`);
+        }
+      });
+      return detail;
+    }
+
+    async function uploadFiles() {
+      const files = selectedFiles();
+      if (!files.length) {
+        setStatus("请先选择文件。", true);
+        return;
+      }
+
+      let detail;
+      try {
+        detail = parseDocumentDetail();
+      } catch (error) {
+        setStatus(error.message, true);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("tenant_id", field("tenant_id").value.trim());
+      formData.append("kb_id", field("kb_id").value.trim());
+      formData.append("document_detail", JSON.stringify(detail));
+      files.forEach((file) => formData.append("files", file));
+
+      uploadBtn.disabled = true;
+      setStatus("正在提交上传...");
+      resultEl.textContent = JSON.stringify({
+        request: {
+          tenant_id: field("tenant_id").value.trim(),
+          kb_id: field("kb_id").value.trim(),
+          file_names: files.map((file) => file.name),
+          document_detail: detail
+        }
+      }, null, 2);
+
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: {"token": field("token").value.trim()},
+          body: formData
+        });
+        const payload = await response.json();
+        resultEl.textContent = JSON.stringify(payload, null, 2);
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || "上传失败");
+        }
+        setStatus(payload.message || "上传请求已提交，后台异步处理中。");
+      } catch (error) {
+        setStatus(error.message || "上传失败", true);
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    filesInput.addEventListener("change", () => {
+      renderFileList();
+      generateDocumentDetail();
+    });
+    document.getElementById("generate-btn").addEventListener("click", generateDocumentDetail);
+    uploadBtn.addEventListener("click", uploadFiles);
+    renderFileList();
+  </script>
+</body>
+</html>

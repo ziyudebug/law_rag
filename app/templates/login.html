@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>请输入密码 - PDF JSON Studio</title>
+  <style>
+    :root {
+      --paper: #f3ede3;
+      --paper-2: #efe5d2;
+      --ink: #141414;
+      --muted: #6c655f;
+      --accent: #cf4e2d;
+      --radius: 28px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, var(--paper) 0%, var(--paper-2) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      width: min(420px, 100%);
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+    .title {
+      font-size: 28px;
+      margin: 0 0 10px;
+      font-family: "STZhongsong", serif;
+    }
+    .desc {
+      color: var(--muted);
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+    .error {
+      color: #cf4e2d;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .input {
+      width: 100%;
+      padding: 18px 20px;
+      border-radius: 22px;
+      border: 1px solid rgba(0,0,0,0.1);
+      font-size: 16px;
+      outline: none;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), #9c2d1f);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 class="title">PDF JSON Studio</h1>
+    <p class="desc">请输入密码继续访问</p>
+
+    <!-- 错误提示 -->
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <!-- 密码表单 -->
+    <form method="POST" action="/check-password">
+      <input
+        type="password"
+        name="password"
+        class="input"
+        placeholder="请输入访问密码"
+        required
+        autocomplete="off"
+      >
+      <button type="submit" class="btn">确认进入</button>
+    </form>
+  </div>
+</body>
+</html>

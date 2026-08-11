@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件树测试</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --text: #141817;
+      --muted: #62706c;
+      --line: #dfe5e1;
+      --accent: #23675d;
+      --accent-dark: #174a42;
+      --danger: #b85628;
+      --soft: #eef4f2;
+      --warn: #f7eddc;
+      --shadow: 0 18px 48px rgba(16, 29, 25, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+    }
+
+    .shell {
+      width: min(1380px, calc(100% - 32px));
+      margin: 28px auto 44px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .bar,
+    .panel,
+    .tree-panel,
+    .response-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 20px;
+    }
+
+    .links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    h3 {
+      font-size: 15px;
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel,
+    .tree-panel,
+    .response-panel {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      background: #fbfcfb;
+      font: inherit;
+      outline: none;
+    }
+
+    input,
+    select {
+      height: 42px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 96px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.6;
+      font-family: "SFMono-Regular", "Menlo", "Monaco", monospace;
+      font-size: 13px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(35, 103, 93, 0.12);
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .check-row input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      height: 42px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 16px;
+      color: #fff;
+      background: var(--accent);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--accent);
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button.secondary:hover {
+      color: var(--accent-dark);
+      background: #f8fbfa;
+    }
+
+    button.danger:hover {
+      background: #93451f;
+    }
+
+    button:disabled {
+      opacity: 0.62;
+      cursor: wait;
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .hint {
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #3a4743;
+      background: var(--soft);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .tree {
+      min-height: 460px;
+      max-height: 720px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .tree ul {
+      margin: 0;
+      padding: 0 0 0 18px;
+      list-style: none;
+    }
+
+    .tree > ul {
+      padding-left: 0;
+    }
+
+    .tree li {
+      margin: 4px 0;
+    }
+
+    .node {
+      width: 100%;
+      min-height: 38px;
+      height: auto;
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text);
+      background: transparent;
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .node:hover,
+    .node.selected {
+      border-color: var(--line);
+      background: var(--soft);
+    }
+
+    .node.matched {
+      background: var(--warn);
+    }
+
+    .node-type,
+    .node-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .node-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .empty {
+      min-height: 120px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    pre {
+      margin: 0;
+      min-height: 460px;
+      max-height: 720px;
+      overflow: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #25312e;
+      background: #fbfcfb;
+      line-height: 1.55;
+      font-size: 13px;
+      font-family: "SFMono-Regular", "Menlo", "Monaco", monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 1080px) {
+      .layout,
+      .split,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .node {
+        grid-template-columns: 1fr;
+      }
+
+      .node-meta {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="bar">
+      <h1>文件树测试</h1>
+      <div class="links">
+        <a href="/retrieval-config">检索配置</a>
+        <a href="/retrieval-test">召回测试</a>
+        <a href="/upload-test">上传测试</a>
+        <a href="/">返回文档解析</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="stack">
+        <div class="panel">
+          <h2>公共参数</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="token">Token</label>
+              <input id="token" value="{{ api_token }}">
+            </div>
+            <div class="field">
+              <label for="tenant_id">租户 ID</label>
+              <input id="tenant_id" type="number" min="1" value="1">
+            </div>
+            <div class="field">
+              <label for="kb_id">知识库 ID</label>
+              <input id="kb_id" type="number" min="1" value="1">
+            </div>
+            <div class="field">
+              <label for="selected_node_id">当前节点 ID</label>
+              <input id="selected_node_id" type="number" min="1" placeholder="点击树节点自动填充">
+            </div>
+          </div>
+          <div class="hint">full_path/tree_path/folder_path 用来表达树层级；file_url/relative_path/file_path 作为业务系统文件相对地址保存。</div>
+        </div>
+
+        <div class="panel">
+          <h2>创建节点</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="create_node_type">节点类型</label>
+              <select id="create_node_type">
+                <option value="1">目录</option>
+                <option value="2">文件</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="create_parent_id">父节点 ID</label>
+              <input id="create_parent_id" type="number" min="0" value="0">
+            </div>
+            <div class="field wide">
+              <label for="create_full_path">树路径</label>
+              <input id="create_full_path" placeholder="/制度/排污许可/文件.pdf">
+            </div>
+            <div class="field">
+              <label for="create_name">名称</label>
+              <input id="create_name" placeholder="不填时从树路径或文件地址取最后一段">
+            </div>
+            <div class="field">
+              <label for="create_document_id">业务文档 ID</label>
+              <input id="create_document_id" type="number" min="1">
+            </div>
+            <div class="field wide">
+              <label for="create_file_url">文件相对地址</label>
+              <input id="create_file_url" placeholder="biz-file/2026/demo.pdf">
+            </div>
+            <div class="field">
+              <label for="create_size">文件大小</label>
+              <input id="create_size" type="number" min="0">
+            </div>
+            <div class="field">
+              <label for="create_extension">扩展名</label>
+              <input id="create_extension" placeholder="pdf">
+            </div>
+            <div class="field">
+              <label for="create_file_hash">文件 Hash</label>
+              <input id="create_file_hash">
+            </div>
+            <div class="field">
+              <label for="create_sort">排序</label>
+              <input id="create_sort" type="number" min="0">
+            </div>
+            <div class="field">
+              <label for="create_user">创建人</label>
+              <input id="create_user">
+            </div>
+            <div class="field">
+              <label for="create_user_id">创建人 ID</label>
+              <input id="create_user_id" type="number" min="0">
+            </div>
+          </div>
+          <div class="actions">
+            <button id="create-btn" type="button">创建</button>
+            <button id="fill-dir-btn" class="secondary" type="button">目录示例</button>
+            <button id="fill-file-btn" class="secondary" type="button">文件示例</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>查询与搜索</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="query_parent_id">父节点 ID</label>
+              <input id="query_parent_id" type="number" min="0" value="0">
+            </div>
+            <div class="field">
+              <label for="query_source">搜索来源</label>
+              <select id="query_source">
+                <option value="auto">auto</option>
+                <option value="es">es</option>
+                <option value="mysql">mysql</option>
+              </select>
+            </div>
+            <div class="field wide">
+              <label for="query_keyword">文件名或文件夹名</label>
+              <input id="query_keyword" placeholder="不填时查整棵树">
+            </div>
+            <label class="check-row">
+              <input id="query_recursive" type="checkbox" checked>
+              递归查询
+            </label>
+            <label class="check-row">
+              <input id="query_include_children" type="checkbox" checked>
+              搜中目录时返回子节点
+            </label>
+          </div>
+          <div class="actions">
+            <button id="query-btn" type="button">查询树</button>
+            <button id="clear-search-btn" class="secondary" type="button">清空搜索</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>详情、更新、删除</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="edit_node_id">节点 ID</label>
+              <input id="edit_node_id" type="number" min="1">
+            </div>
+            <div class="field">
+              <label for="edit_document_id">业务文档 ID</label>
+              <input id="edit_document_id" type="number" min="1">
+            </div>
+            <div class="field">
+              <label for="edit_name">新名称</label>
+              <input id="edit_name">
+            </div>
+            <div class="field">
+              <label for="edit_parent_id">新父节点 ID</label>
+              <input id="edit_parent_id" type="number" min="0">
+            </div>
+            <div class="field wide">
+              <label for="edit_full_path">新树路径</label>
+              <input id="edit_full_path" placeholder="/制度/新目录/新文件.pdf">
+            </div>
+            <div class="field wide">
+              <label for="edit_file_url">新文件相对地址</label>
+              <input id="edit_file_url">
+            </div>
+            <div class="field">
+              <label for="edit_size">新文件大小</label>
+              <input id="edit_size" type="number" min="0">
+            </div>
+            <div class="field">
+              <label for="edit_sort">新排序</label>
+              <input id="edit_sort" type="number" min="0">
+            </div>
+          </div>
+          <div class="actions">
+            <button id="detail-btn" class="secondary" type="button">详情</button>
+            <button id="update-btn" type="button">更新</button>
+            <button id="delete-btn" class="danger" type="button">删除</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="split">
+        <div class="tree-panel">
+          <h2>树形结果</h2>
+          <div class="status" id="status">未请求</div>
+          <div class="tree" id="tree"></div>
+        </div>
+
+        <div class="response-panel">
+          <h2>原始响应</h2>
+          <pre id="raw">{}</pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const field = (id) => document.getElementById(id);
+    const treeEl = field("tree");
+    const rawEl = field("raw");
+    const statusEl = field("status");
+    let selectedNodeId = "";
+
+    function setStatus(message, error = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", error);
+    }
+
+    function readTrim(id) {
+      return field(id).value.trim();
+    }
+
+    function readNumber(id) {
+      const value = readTrim(id);
+      return value === "" ? undefined : Number(value);
+    }
+
+    function putIfValue(payload, key, value) {
+      if (value !== undefined && value !== null && value !== "") {
+        payload[key] = value;
+      }
+    }
+
+    function basePayload() {
+      return {
+        tenant_id: Number(readTrim("tenant_id")),
+        kb_id: Number(readTrim("kb_id"))
+      };
+    }
+
+    function tokenHeader() {
+      return {"token": readTrim("token")};
+    }
+
+    async function requestJson(url, options = {}) {
+      const headers = {
+        ...tokenHeader(),
+        ...(options.body ? {"Content-Type": "application/json"} : {})
+      };
+      const response = await fetch(url, {...options, headers});
+      const payload = await response.json();
+      rawEl.textContent = JSON.stringify(payload, null, 2);
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || "请求失败");
+      }
+      return payload;
+    }
+
+    function createPayload() {
+      const payload = basePayload();
+      payload.node_type = Number(readTrim("create_node_type"));
+      putIfValue(payload, "parent_id", readNumber("create_parent_id"));
+      putIfValue(payload, "full_path", readTrim("create_full_path"));
+      putIfValue(payload, "name", readTrim("create_name"));
+      putIfValue(payload, "document_id", readNumber("create_document_id"));
+      putIfValue(payload, "file_url", readTrim("create_file_url"));
+      putIfValue(payload, "size", readNumber("create_size"));
+      putIfValue(payload, "extension", readTrim("create_extension"));
+      putIfValue(payload, "file_hash", readTrim("create_file_hash"));
+      putIfValue(payload, "sort", readNumber("create_sort"));
+      putIfValue(payload, "create_user", readTrim("create_user"));
+      putIfValue(payload, "create_user_id", readNumber("create_user_id"));
+      return payload;
+    }
+
+    function queryPayload() {
+      return {
+        ...basePayload(),
+        parent_id: readNumber("query_parent_id") ?? 0,
+        keyword: readTrim("query_keyword"),
+        search_source: readTrim("query_source"),
+        recursive: field("query_recursive").checked,
+        include_matched_folder_children: field("query_include_children").checked
+      };
+    }
+
+    function editPayload(includePatch) {
+      const payload = basePayload();
+      putIfValue(payload, "id", readNumber("edit_node_id") || readNumber("selected_node_id"));
+      putIfValue(payload, "document_id", readNumber("edit_document_id"));
+      if (!includePatch) return payload;
+      putIfValue(payload, "name", readTrim("edit_name"));
+      putIfValue(payload, "parent_id", readNumber("edit_parent_id"));
+      putIfValue(payload, "full_path", readTrim("edit_full_path"));
+      putIfValue(payload, "file_url", readTrim("edit_file_url"));
+      putIfValue(payload, "size", readNumber("edit_size"));
+      putIfValue(payload, "sort", readNumber("edit_sort"));
+      return payload;
+    }
+
+    function renderTree(items) {
+      treeEl.textContent = "";
+      if (!items || !items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "暂无节点";
+        treeEl.appendChild(empty);
+        return;
+      }
+      const root = document.createElement("ul");
+      items.forEach((item) => root.appendChild(renderNode(item)));
+      treeEl.appendChild(root);
+    }
+
+    function renderNode(item) {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `node${item.matched ? " matched" : ""}`;
+      if (String(item.id) === String(selectedNodeId)) btn.classList.add("selected");
+
+      const type = document.createElement("span");
+      type.className = "node-type";
+      type.textContent = item.node_type === 1 ? "目录" : "文件";
+
+      const name = document.createElement("span");
+      name.className = "node-name";
+      name.textContent = item.full_path || item.name || `#${item.id}`;
+
+      const meta = document.createElement("span");
+      meta.className = "node-meta";
+      meta.textContent = `id:${item.id} parent:${item.parent_id}`;
+
+      btn.append(type, name, meta);
+      btn.addEventListener("click", () => selectNode(item));
+      li.appendChild(btn);
+
+      if (item.children && item.children.length) {
+        const childList = document.createElement("ul");
+        item.children.forEach((child) => childList.appendChild(renderNode(child)));
+        li.appendChild(childList);
+      }
+      return li;
+    }
+
+    function selectNode(item) {
+      selectedNodeId = item.id;
+      field("selected_node_id").value = item.id || "";
+      field("edit_node_id").value = item.id || "";
+      field("edit_document_id").value = item.document_id || "";
+      field("edit_name").value = item.name || "";
+      field("edit_parent_id").value = item.parent_id ?? "";
+      field("edit_file_url").value = item.file_url || "";
+      field("edit_size").value = item.size ?? "";
+      field("edit_sort").value = item.sort ?? "";
+      renderTree(JSON.parse(treeEl.dataset.items || "[]"));
+    }
+
+    async function loadTree() {
+      setStatus("查询中...");
+      const payload = await requestJson("/api/folder_tree", {
+        method: "POST",
+        body: JSON.stringify(queryPayload())
+      });
+      treeEl.dataset.items = JSON.stringify(payload.data || []);
+      renderTree(payload.data || []);
+      const meta = payload.meta || {};
+      setStatus(`节点 ${meta.node_count ?? 0} 个，命中 ${meta.matched_count ?? 0} 个，来源 ${meta.search_source || "-"}`);
+    }
+
+    async function createNode() {
+      setStatus("创建中...");
+      const payload = await requestJson("/api/folder_create", {
+        method: "POST",
+        body: JSON.stringify(createPayload())
+      });
+      setStatus(`已创建节点 ${payload.data?.id || ""}`);
+      await loadTree();
+    }
+
+    async function loadDetail() {
+      setStatus("读取详情中...");
+      const payload = await requestJson("/api/folder_detail", {
+        method: "POST",
+        body: JSON.stringify(editPayload(false))
+      });
+      selectNode(payload.data);
+      setStatus(`已读取节点 ${payload.data?.id || ""}`);
+    }
+
+    async function updateNode() {
+      setStatus("更新中...");
+      const payload = await requestJson("/api/folder_update", {
+        method: "POST",
+        body: JSON.stringify(editPayload(true))
+      });
+      setStatus(`已更新节点 ${payload.data?.id || ""}`);
+      await loadTree();
+    }
+
+    async function deleteNode() {
+      const payload = editPayload(false);
+      if (!payload.id && !payload.document_id) {
+        setStatus("请先填写节点 ID 或业务文档 ID。", true);
+        return;
+      }
+      if (!window.confirm("确认软删除这个节点及其子节点？")) return;
+      setStatus("删除中...");
+      const result = await requestJson("/api/folder_delete", {
+        method: "POST",
+        body: JSON.stringify({...payload, recursive: true})
+      });
+      selectedNodeId = "";
+      field("selected_node_id").value = "";
+      setStatus(`已删除 ${result.data?.deleted_count || 0} 个节点`);
+      await loadTree();
+    }
+
+    function withBusy(button, action) {
+      return async () => {
+        button.disabled = true;
+        try {
+          await action();
+        } catch (error) {
+          setStatus(error.message || "请求失败", true);
+        } finally {
+          button.disabled = false;
+        }
+      };
+    }
+
+    field("create-btn").addEventListener("click", withBusy(field("create-btn"), createNode));
+    field("query-btn").addEventListener("click", withBusy(field("query-btn"), loadTree));
+    field("detail-btn").addEventListener("click", withBusy(field("detail-btn"), loadDetail));
+    field("update-btn").addEventListener("click", withBusy(field("update-btn"), updateNode));
+    field("delete-btn").addEventListener("click", withBusy(field("delete-btn"), deleteNode));
+
+    field("clear-search-btn").addEventListener("click", () => {
+      field("query_keyword").value = "";
+      field("query_source").value = "auto";
+      loadTree().catch((error) => setStatus(error.message, true));
+    });
+
+    field("fill-dir-btn").addEventListener("click", () => {
+      field("create_node_type").value = "1";
+      field("create_parent_id").value = "0";
+      field("create_full_path").value = "/制度/排污许可";
+      field("create_name").value = "";
+      field("create_document_id").value = "";
+      field("create_file_url").value = "";
+      field("create_size").value = "";
+      field("create_extension").value = "";
+      field("create_file_hash").value = "";
+      field("create_sort").value = "";
+    });
+
+    field("fill-file-btn").addEventListener("click", () => {
+      field("create_node_type").value = "2";
+      field("create_parent_id").value = "0";
+      field("create_full_path").value = "/制度/排污许可/排污许可证申请表.pdf";
+      field("create_name").value = "";
+      field("create_document_id").value = "10001";
+      field("create_file_url").value = "business/2026/permit/apply.pdf";
+      field("create_size").value = "204800";
+      field("create_extension").value = "pdf";
+      field("create_file_hash").value = "";
+      field("create_sort").value = "";
+    });
+
+    loadTree().catch((error) => setStatus(error.message, true));
+  </script>
+</body>
+</html>

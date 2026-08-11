@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>召回测试</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --text: #141817;
+      --muted: #62706c;
+      --line: #dfe5e1;
+      --accent: #23675d;
+      --accent-dark: #174a42;
+      --danger: #b85628;
+      --soft: #eef4f2;
+      --shadow: 0 18px 48px rgba(16, 29, 25, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+    }
+
+    .shell {
+      width: min(1280px, calc(100% - 32px));
+      margin: 28px auto 44px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .bar,
+    .panel,
+    .result-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 20px;
+    }
+
+    .links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    h3 {
+      font-size: 16px;
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      background: #fbfcfb;
+      font: inherit;
+      outline: none;
+    }
+
+    input {
+      height: 42px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 112px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    textarea.compact-textarea {
+      min-height: 76px;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(35, 103, 93, 0.12);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      height: 42px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 16px;
+      color: #fff;
+      background: var(--accent);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--accent);
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button.secondary:hover {
+      color: var(--accent-dark);
+      background: #f8fbfa;
+    }
+
+    button:disabled {
+      opacity: 0.62;
+      cursor: wait;
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .config-box {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      font-size: 13px;
+    }
+
+    .scope-panel {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .tree-toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .tree-toolbar button {
+      min-width: 86px;
+    }
+
+    .scope-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 28px;
+    }
+
+    .scope-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      min-height: 26px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: var(--accent-dark);
+      background: #dcebe7;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .scope-chip button {
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      padding: 0;
+      border-radius: 50%;
+      color: var(--accent-dark);
+      background: transparent;
+      line-height: 18px;
+    }
+
+    .tree-list {
+      max-height: 320px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .tree-list ul {
+      margin: 0;
+      padding: 6px 0 6px 16px;
+      list-style: none;
+    }
+
+    .tree-list > ul {
+      padding-left: 0;
+    }
+
+    .tree-row {
+      display: grid;
+      grid-template-columns: 24px auto 1fr;
+      gap: 8px;
+      align-items: center;
+      min-height: 34px;
+      padding: 4px 10px;
+      color: var(--text);
+      border-radius: 6px;
+    }
+
+    .tree-row:hover {
+      background: var(--soft);
+    }
+
+    .tree-row input {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+    }
+
+    .node-type {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 22px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .node-type.file {
+      color: var(--accent-dark);
+      background: #dcebe7;
+    }
+
+    .node-name {
+      min-width: 0;
+      overflow: hidden;
+      color: #26312e;
+      font-size: 13px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .node-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .config-row,
+    .score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: var(--accent-dark);
+      background: #dcebe7;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-card {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .content {
+      margin: 0;
+      color: #26312e;
+      font-size: 14px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    pre {
+      margin: 0;
+      max-height: 360px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 8px;
+      color: #eef7f4;
+      background: #14201d;
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty {
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fbfcfb;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .layout,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .tree-toolbar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="bar">
+      <h1>召回测试</h1>
+      <div class="links">
+        <a href="/retrieval-config">检索配置</a>
+        <a href="/upload-test">上传测试</a>
+        <a href="/folder-test">文件树测试</a>
+        <a href="/">返回文档解析</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <h2>测试参数</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="tenant_id">租户 ID</label>
+            <input id="tenant_id" type="number" min="1" value="1">
+          </div>
+          <div class="field">
+            <label for="kb_id">知识库 ID</label>
+            <input id="kb_id" type="number" min="1" value="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="document_ids">直接文档 ID</label>
+          <textarea id="document_ids" class="compact-textarea" placeholder="可选；多个业务文档 ID 用逗号、空格或换行分隔"></textarea>
+        </div>
+        <div class="scope-panel">
+          <h3>文件树选择</h3>
+          <div class="tree-toolbar">
+            <div class="field">
+              <label for="tree_keyword">节点搜索</label>
+              <input id="tree_keyword" placeholder="按文件夹或文件名搜索">
+            </div>
+            <button class="secondary" id="load-tree-btn" type="button">加载</button>
+            <button class="secondary" id="clear-tree-btn" type="button">清空</button>
+          </div>
+          <div class="scope-summary" id="scope-summary">
+            <span class="scope-chip">未选择文件树节点</span>
+          </div>
+          <div class="tree-list" id="folder-tree">
+            <div class="empty">点击加载后选择文件夹或文件。</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="top_k">临时 Top K</label>
+          <input id="top_k" type="number" min="1" placeholder="不填则使用知识库配置">
+        </div>
+        <div class="field">
+          <label for="query">用户问题</label>
+          <textarea id="query" placeholder="输入要测试召回的问题"></textarea>
+        </div>
+        <button id="search-btn" type="button">执行召回</button>
+        <button class="secondary" id="config-btn" type="button">刷新当前配置</button>
+        <div class="status" id="status">等待输入测试问题。</div>
+
+        <div class="config-box" id="config-box">
+          <div class="config-row"><span>检索方式</span><strong id="config-mode">未读取</strong></div>
+          <div class="config-row"><span>混合策略</span><strong id="config-hybrid">未读取</strong></div>
+          <div class="config-row"><span>Top K</span><strong id="config-top-k">未读取</strong></div>
+          <div class="config-row"><span>Score 阈值</span><strong id="config-threshold">未读取</strong></div>
+          <div class="config-row"><span>source</span><strong id="config-source">未读取</strong></div>
+          <div class="config-row"><span>rerank</span><strong id="config-rerank">未读取</strong></div>
+          <div class="config-row"><span>召回范围</span><strong id="config-scope">整个知识库</strong></div>
+          <div class="config-row"><span>解析文档</span><strong id="config-docs">未执行</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="bar" style="box-shadow:none;padding:0;border:0;">
+          <h2>召回结果</h2>
+          <span class="badge" id="result-count">0 条</span>
+        </div>
+        <div class="results" id="results">
+          <div class="empty">执行召回后显示结果。</div>
+        </div>
+        <h2>原始响应</h2>
+        <pre id="raw-json">{}</pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const searchBtn = document.getElementById("search-btn");
+    const resultsEl = document.getElementById("results");
+    const rawJsonEl = document.getElementById("raw-json");
+    const resultCountEl = document.getElementById("result-count");
+    const treeEl = document.getElementById("folder-tree");
+    const scopeSummaryEl = document.getElementById("scope-summary");
+    const apiToken = {{ api_token|tojson }};
+    const selectedTreeNodes = new Map();
+
+    function field(id) {
+      return document.getElementById(id);
+    }
+
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function setText(id, value) {
+      field(id).textContent = value ?? "-";
+    }
+
+    function tokenHeaders(withJson = false) {
+      return {
+        "token": apiToken,
+        ...(withJson ? {"Content-Type": "application/json"} : {})
+      };
+    }
+
+    function modeText(mode) {
+      if (mode === "VECTOR") return "向量检索";
+      if (mode === "FULLTEXT") return "全文检索";
+      if (mode === "HYBRID") return "混合检索";
+      return mode || "-";
+    }
+
+    function hybridText(strategy) {
+      if (strategy === "RERANK") return "rerank 模型";
+      if (strategy === "WEIGHT") return "权重设置";
+      return strategy || "-";
+    }
+
+    function scoreText(item) {
+      const keys = ["score", "rerank_score", "hybrid_score", "vector_score", "es_score"];
+      return keys
+        .filter((key) => item[key] !== undefined && item[key] !== null)
+        .map((key) => `${key}: ${Number(item[key]).toFixed(6)}`)
+        .join(" / ");
+    }
+
+    function parseDocumentIds(value) {
+      return value
+        .split(/[\s,，]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    function selectedNodes() {
+      return Array.from(selectedTreeNodes.values());
+    }
+
+    function selectedFolders() {
+      return selectedNodes().filter((item) => item.node_type === 1);
+    }
+
+    function selectedFiles() {
+      return selectedNodes().filter((item) => item.node_type === 2);
+    }
+
+    function nodeKey(item) {
+      return String(item.id);
+    }
+
+    function nodeLabel(item) {
+      return item.full_path || item.name || `#${item.id}`;
+    }
+
+    function updateScopeSummary() {
+      scopeSummaryEl.textContent = "";
+      const folders = selectedFolders();
+      const files = selectedFiles();
+      const directDocs = parseDocumentIds(field("document_ids").value);
+      const total = folders.length + files.length + directDocs.length;
+      setText(
+        "config-scope",
+        total
+          ? `目录 ${folders.length} 个 / 文件 ${files.length} 个 / 直接文档 ${directDocs.length} 个`
+          : "整个知识库"
+      );
+
+      if (!total) {
+        const chip = document.createElement("span");
+        chip.className = "scope-chip";
+        chip.textContent = "未选择文件树节点";
+        scopeSummaryEl.appendChild(chip);
+        return;
+      }
+
+      [...folders, ...files].forEach((item) => {
+        const chip = document.createElement("span");
+        chip.className = "scope-chip";
+        chip.textContent = `${item.node_type === 1 ? "目录" : "文件"} ${nodeLabel(item)}`;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "x";
+        remove.addEventListener("click", () => {
+          selectedTreeNodes.delete(nodeKey(item));
+          renderTree(JSON.parse(treeEl.dataset.items || "[]"));
+          updateScopeSummary();
+        });
+        chip.appendChild(remove);
+        scopeSummaryEl.appendChild(chip);
+      });
+
+      if (directDocs.length) {
+        const chip = document.createElement("span");
+        chip.className = "scope-chip";
+        chip.textContent = `直接文档 ${directDocs.length} 个`;
+        scopeSummaryEl.appendChild(chip);
+      }
+    }
+
+    function buildPayload() {
+      const payload = {
+        tenant_id: field("tenant_id").value.trim(),
+        kb_id: field("kb_id").value.trim(),
+        query: field("query").value.trim()
+      };
+      const documentIds = parseDocumentIds(field("document_ids").value);
+      const folders = selectedFolders();
+      const files = selectedFiles();
+      const topK = field("top_k").value.trim();
+      if (documentIds.length) payload.document_ids = documentIds;
+      if (folders.length) payload.folder_ids = folders.map((item) => item.id);
+      if (files.length) payload.file_node_ids = files.map((item) => item.id);
+      if (folders.length || files.length) {
+        payload.selected_nodes = [...folders, ...files].map((item) => ({
+          id: item.id,
+          node_type: item.node_type,
+          document_id: item.document_id,
+          name: item.name,
+          full_path: item.full_path
+        }));
+      }
+      if (topK) payload.top_k = Number(topK);
+      return payload;
+    }
+
+    async function loadConfig() {
+      const tenantId = encodeURIComponent(field("tenant_id").value.trim());
+      const kbId = encodeURIComponent(field("kb_id").value.trim());
+      const response = await fetch(`/api/retrieval-config?tenant_id=${tenantId}&kb_id=${kbId}`);
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error(payload.error || "读取配置失败");
+
+      const config = payload.data;
+      setText("config-mode", modeText(config.retrieval_mode));
+      setText("config-hybrid", config.retrieval_mode === "HYBRID" ? hybridText(config.hybrid_strategy) : "-");
+      setText("config-top-k", config.top_k);
+      setText("config-threshold", config.score_threshold);
+      setText("config-source", config.enable_source ? "启用" : "关闭");
+      setText("config-rerank", config.use_rerank ? (config.rerank_model || "启用") : "关闭");
+      return config;
+    }
+
+    async function loadFolderTree() {
+      const payload = {
+        tenant_id: Number(field("tenant_id").value.trim()),
+        kb_id: Number(field("kb_id").value.trim()),
+        parent_id: 0,
+        keyword: field("tree_keyword").value.trim(),
+        search_source: "auto",
+        recursive: true,
+        include_matched_folder_children: true
+      };
+      treeEl.textContent = "";
+      const loading = document.createElement("div");
+      loading.className = "empty";
+      loading.textContent = "文件树加载中...";
+      treeEl.appendChild(loading);
+
+      const response = await fetch("/api/folder_tree", {
+        method: "POST",
+        headers: tokenHeaders(true),
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || "文件树加载失败");
+      treeEl.dataset.items = JSON.stringify(data.data || []);
+      renderTree(data.data || []);
+      const meta = data.meta || {};
+      setStatus(`文件树已加载，节点 ${meta.node_count ?? 0} 个。`);
+    }
+
+    function renderTree(items) {
+      treeEl.textContent = "";
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "暂无文件树节点。";
+        treeEl.appendChild(empty);
+        return;
+      }
+      const root = document.createElement("ul");
+      items.forEach((item) => root.appendChild(renderNode(item)));
+      treeEl.appendChild(root);
+    }
+
+    function renderNode(item) {
+      const li = document.createElement("li");
+      const row = document.createElement("label");
+      row.className = "tree-row";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedTreeNodes.has(nodeKey(item));
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          selectedTreeNodes.set(nodeKey(item), item);
+        } else {
+          selectedTreeNodes.delete(nodeKey(item));
+        }
+        updateScopeSummary();
+      });
+
+      const type = document.createElement("span");
+      type.className = `node-type${item.node_type === 2 ? " file" : ""}`;
+      type.textContent = item.node_type === 1 ? "目录" : "文件";
+
+      const text = document.createElement("span");
+      text.className = "node-name";
+      text.title = `${nodeLabel(item)} / id:${item.id} / document_id:${item.document_id || "-"}`;
+      text.textContent = `${nodeLabel(item)} `;
+      const meta = document.createElement("span");
+      meta.className = "node-meta";
+      meta.textContent = `id:${item.id}${item.node_type === 2 ? ` document:${item.document_id || "-"}` : ""}`;
+      text.appendChild(meta);
+
+      row.append(checkbox, type, text);
+      li.appendChild(row);
+
+      if (item.children && item.children.length) {
+        const childList = document.createElement("ul");
+        item.children.forEach((child) => childList.appendChild(renderNode(child)));
+        li.appendChild(childList);
+      }
+      return li;
+    }
+
+    function renderScopeMeta(scope) {
+      if (!scope) {
+        setText("config-docs", "未返回");
+        return;
+      }
+      const docs = scope.document_ids || [];
+      if (!scope.limited) {
+        setText("config-docs", "整个知识库");
+        return;
+      }
+      setText("config-docs", docs.length ? `${docs.length} 个：${docs.join(", ")}` : "0 个");
+    }
+
+    function renderResults(items) {
+      resultsEl.textContent = "";
+      resultCountEl.textContent = `${items.length} 条`;
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "没有命中结果。";
+        resultsEl.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const card = document.createElement("article");
+        card.className = "result-card";
+
+        const head = document.createElement("div");
+        head.className = "result-head";
+
+        const title = document.createElement("h3");
+        title.textContent = `#${index + 1}`;
+        const score = document.createElement("span");
+        score.className = "badge";
+        score.textContent = scoreText(item) || "无分数";
+        head.appendChild(title);
+        head.appendChild(score);
+
+        const content = document.createElement("p");
+        content.className = "content";
+        content.textContent = item.content || "";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const metaItems = [
+          `chunk_id: ${item.chunk_id || "-"}`,
+          `document_id: ${item.document_id || "-"}`,
+          `parent_chunk_id: ${item.parent_chunk_id || "-"}`,
+          `source_file: ${item.source_file || "-"}`
+        ];
+        metaItems.forEach((text) => {
+          const span = document.createElement("span");
+          span.textContent = text;
+          meta.appendChild(span);
+        });
+
+        card.appendChild(head);
+        card.appendChild(content);
+        card.appendChild(meta);
+        resultsEl.appendChild(card);
+      });
+    }
+
+    async function runSearch() {
+      const payload = buildPayload();
+      if (!payload.query) {
+        setStatus("请输入用户问题。", true);
+        return;
+      }
+
+      updateScopeSummary();
+      searchBtn.disabled = true;
+      setStatus("正在读取配置并执行召回...");
+      rawJsonEl.textContent = JSON.stringify({request: payload}, null, 2);
+
+      try {
+        await loadConfig();
+        const response = await fetch("/api/search", {
+          method: "POST",
+          headers: tokenHeaders(true),
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        rawJsonEl.textContent = JSON.stringify({request: payload, response: data}, null, 2);
+        if (!response.ok || !data.success) throw new Error(data.error || "召回失败");
+        renderScopeMeta(data.meta?.scope);
+        renderResults(data.data || []);
+        setStatus(`召回完成，共 ${data.data?.length || 0} 条。`);
+      } catch (error) {
+        renderResults([]);
+        setText("config-docs", "未执行");
+        setStatus(error.message || "召回失败", true);
+      } finally {
+        searchBtn.disabled = false;
+      }
+    }
+
+    document.getElementById("search-btn").addEventListener("click", runSearch);
+    document.getElementById("config-btn").addEventListener("click", () => {
+      setStatus("正在刷新配置...");
+      loadConfig()
+        .then(() => setStatus("配置已刷新。"))
+        .catch((error) => setStatus(error.message, true));
+    });
+    document.getElementById("load-tree-btn").addEventListener("click", () => {
+      loadFolderTree().catch((error) => setStatus(error.message, true));
+    });
+    document.getElementById("clear-tree-btn").addEventListener("click", () => {
+      selectedTreeNodes.clear();
+      renderTree(JSON.parse(treeEl.dataset.items || "[]"));
+      updateScopeSummary();
+      setText("config-docs", "未执行");
+      setStatus("文件树选择已清空。");
+    });
+    field("document_ids").addEventListener("input", updateScopeSummary);
+    field("tree_keyword").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        loadFolderTree().catch((error) => setStatus(error.message, true));
+      }
+    });
+    field("query").addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        runSearch();
+      }
+    });
+
+    updateScopeSummary();
+    loadConfig().catch(() => setStatus("填写租户和知识库后刷新配置。"));
+  </script>
+</body>
+</html>
