@@ -242,8 +242,6 @@ MODEL_CONFIG_JSON='[
 
 开源仓库中**严禁提交真实密钥**。请确保：
 
-- `.env` 已被 `.gitignore` 忽略（本项目已配置），切勿提交
-- 提交前确认 `.env.example` 中所有密钥均为占位值（`change-me` / 空）
 - `FLASK_SECRET_KEY` / `ACCESS_PASSWORD` / `API_TOKEN` 在部署时使用强随机值
 - 生产环境关闭 `FLASK_DEBUG=true`
 - ES / Milvus 对外暴露时务必开启鉴权
