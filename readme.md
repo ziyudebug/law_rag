@@ -241,4 +241,4 @@ MODEL_CONFIG_JSON='[
 
 ## 📄 License
 
-本项目仅作为内部合规知识库后端参考实现，如需商用请确认所用模型与服务（DashScope / PaddleOCR 等）的许可与计费条款。
+本项目仅作为内部知识库后端参考实现，如需商用请确认所用模型与服务（DashScope / PaddleOCR 等）的许可与计费条款。
